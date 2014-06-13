@@ -22,6 +22,11 @@ from django.conf import settings
 COVERAGE_TEST_RUNNER = getattr(settings, 'COVERAGE_TEST_RUNNER',
                              'django_coverage.coverage_runner.CoverageRunner')
 
+# Specify the coverage config file
+# Use False to not load any configfile
+# specify config file path to load it. Example: ".coveragerc"
+COVERAGE_CONFIG_FILE = getattr(settings, 'COVERAGE_CONFIG_FILE', False)
+
 # Specify whether coverage data file is created or not.
 COVERAGE_USE_CACHE = getattr(settings, 'COVERAGE_USE_CACHE', False)
 
