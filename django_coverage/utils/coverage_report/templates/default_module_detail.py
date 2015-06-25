@@ -142,7 +142,7 @@ TOP = """\
       #authors a, #authors a:hover, #authors a:visited {
            color: red;
            margin: 5px 10px 5px 0;
-           line-height: 150%;
+           line-height: 150%%;
       }
       #authors a.selected {
           color: gray;
