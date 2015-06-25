@@ -175,7 +175,7 @@ def html_report(outdir, modules, excludes=None, errors=None):
         open(os.path.join(outdir, 'coverage_status.png'), 'wb').write(badge)
 
     # 最后拷贝JS
-    js_files = ["zepto.min.js", 'sorttable.js']
+    js_files = ["zepto.min.js", 'sorttable.js', "filter.js"]
     for js_file in js_files:
         js_data = open(os.path.join(os.path.dirname(__file__), js_file), 'rb').read()
         open(os.path.join(outdir, js_file), "wb").write(js_data)
