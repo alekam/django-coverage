@@ -62,6 +62,7 @@ class Authors(Singleton):
                      module <----> module/coverage/
     """
     author_2_modules = {}
+    author_2_url = {}
 
 
     def get_author_summary(self, author):

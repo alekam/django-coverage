@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 import os, time
+import datetime
 from django_coverage.utils.module_tools.data_storage import Authors
 
 try:
@@ -83,9 +84,9 @@ def html_report(outdir, modules, excludes=None, errors=None):
                  * ``%(excluded_count)d``
                  * ``%(percent_covered)0.1f``
     """
-    test_timestamp = time.strftime('%a %Y-%m-%d %H:%M %Z')
-    m_subdirname = 'modules'
-    m_dir = os.path.join(outdir, m_subdirname)
+    test_timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    m_dir = os.path.join(outdir, SUBDIR_MODULE)
     if not os.path.exists(m_dir):
         os.makedirs(m_dir)
 
@@ -105,7 +106,7 @@ def html_report(outdir, modules, excludes=None, errors=None):
             continue
 
         # 每个独立的moudle都会有自己的html报表
-        m_vars.module_link = p2url(os.path.join(m_subdirname, m_vars.module_name + '.html'))
+        m_vars.module_link = p2url(os.path.join(SUBDIR_MODULE, m_vars.module_name + '.html'))
         module_stats.append(module_index.MODULE_STAT % m_vars.__dict__)
         total_lines += m_vars.total_count
         total_executed += m_vars.executed_count
@@ -170,12 +171,7 @@ def html_report(outdir, modules, excludes=None, errors=None):
     fo.close()
 
     if settings.COVERAGE_BADGE_TYPE:
-        badge = open(os.path.join(
-            os.path.dirname(__file__),
-            'badges',
-            settings.COVERAGE_BADGE_TYPE,
-            '%s.png' % int(overall_covered)
-        ), 'rb').read()
+        badge = open(os.path.join(os.path.dirname(__file__), 'badges', settings.COVERAGE_BADGE_TYPE, '%s.png' % int(overall_covered)), 'rb').read()
         open(os.path.join(outdir, 'coverage_status.png'), 'wb').write(badge)
 
 def output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered):
@@ -200,8 +196,16 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
     authors.sort()
 
     module_stats = []
+
     for author in authors:
         module_link = p2url(os.path.join(SUBDIR_AUTHOR, author + '.html'))
+        Authors().author_2_url[author] = module_link
+
+
+    index = 0
+    for author in authors:
+        module_link = Authors().author_2_url[author]
+
         module_name = author
         # executed, missed, excluded, total, "100%"
         executed_count, missed, excluded_count, total_count, percent_covered = authors_sig.get_author_summary(author)
@@ -211,7 +215,9 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
 
         module_stats.append(module_index.MODULE_STAT % vars())
 
-        output_author_html(outdir, authors_sig.author_2_modules[author], author)
+        output_author_html(outdir, authors_sig.author_2_modules[author], author, test_timestamp, authors, index)
+
+        index += 1
 
 
     module_stats = os.linesep.join(module_stats)
@@ -226,7 +232,7 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
     fo.write(module_index.BOTTOM)
     fo.close()
 
-def output_author_html(outdir, modules, author):
+def output_author_html(outdir, modules, author, test_timestamp, authors, index):
     """
     将单个用户的数据输出到html文件中
     :param outdir:
@@ -245,7 +251,7 @@ def output_author_html(outdir, modules, author):
 
     module_stats = []
     for module_name in module_names:
-
+        # 分析用户在每个模块中的代码覆盖率
         author_module = modules[module_name]
         # 当前的html的url为: authors/author.html, 需要跳转到: modules/xxxx.html, 因此需要使用相对路径
         module_link = "../" + author_module.module_link
@@ -253,7 +259,7 @@ def output_author_html(outdir, modules, author):
         executed_count = author_module.executed
         missed = author_module.missed
         excluded_count = author_module.excluded
-        percent_covered = executed_count / max((executed_count + missed), 1.0) * 100
+        percent_covered = executed_count * 100.0 / max((executed_count + missed), 1.0)
         total_count = executed_count + missed
 
         severity = 'normal'
@@ -268,7 +274,35 @@ def output_author_html(outdir, modules, author):
 
     fo = open(os.path.join(outdir, SUBDIR_AUTHOR, author + '.html'), 'w+')
     fo.write(module_index.TOP)
-    
+
+    has_no_prev = index == 0
+    has_no_next = index == len(authors) - 1
+
+    up_link = "../auth_index.html"
+    up_label = "所有用户"
+    if not has_no_prev:
+        prev_link = "../" +  Authors.author_2_url[authors[index - 1]]
+        prev_label = authors[index - 1]
+
+    if not has_no_next:
+        next_link = "../" +  Authors.author_2_url[authors[index + 1]]
+        next_label = authors[index + 1]
+
+
+    if has_no_prev and has_no_next:
+        nav_html = module_index.NAV_NO % vars()
+    elif has_no_next:
+        nav_html = module_index.NAV_NO_NEXT % vars()
+    elif has_no_prev:
+        nav_html = module_index.NAV_NO_PREV % vars()
+    else:
+        nav_html = module_index.NAV % vars()
+
+    if nav_html:
+        fo.write(nav_html)
+
+    fo.write(module_index.CONTENT_HEADER_AUTHOR % vars())
+
     total_executed, missed, total_excluded, total_lines, overall_covered = Authors().get_author_summary(author)
     severity = 'normal'
     if overall_covered < 75: severity = 'warning'

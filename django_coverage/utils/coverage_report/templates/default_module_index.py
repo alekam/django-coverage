@@ -22,20 +22,22 @@ TOP = """\
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
     <title>Test coverage report</title>
     <style type="text/css" media="screen">
-      a
-      {
+      a {
         color: #3d707a;
       }
-      
-      a:hover, a:active
-      {
+      a:hover, a:active {
         color: #bf7d18;
       }
     
-      body
-      {
+      body {
         font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
         font-size: 13px;
+      }
+
+      .nav
+      {
+        font-size: 12px;
+        margin-left: 50px;
       }
 
       tr:hover {
@@ -130,10 +132,19 @@ TOP = """\
 
 CONTENT_HEADER = """\
 <div id="content-header">
-  <h1>Test Coverage Report</h1>
-  <p>Generated: %(test_timestamp)s</p>
+  <h1>TestCase覆盖率报告</h1>
+  <p>报告生成时间: %(test_timestamp)s</p>
   <p><img src="coverage_status.png"></p>
   <p><a target=_blank href="auth_index.html">按照作者查看</a></p>
+</div>
+"""
+
+
+
+CONTENT_HEADER_AUTHOR = """\
+<div id="content-header">
+  <h1>TestCase覆盖率报告: %(author)s</h1>
+  <p>报告生成时间: %(test_timestamp)s</p>
 </div>
 """
 
@@ -146,23 +157,23 @@ CONTENT_BODY = """\
     <thead>
       <tr>
         <th>&nbsp;</th>
-        <th colspan="3" class="statements">Statements</th>
+        <th colspan="3" class="statements">代码执行情况</th>
       </tr>
       <tr class="last">
-        <th class="module-name">Module</th>
-        <th>total</th>
-        <th>executed</th>
-        <th>excluded</th>
-        <th>%% covered</th>
+        <th class="module-name">模块</th>
+        <th>总行数</th>
+        <th>执行行数</th>
+        <th>忽略行数</th>
+        <th>覆盖率</th>
       </tr>
     </thead>
     <tfoot>
       <tr>
         <td class="module-name">Total</td>
-        <td>%(total_lines)d</td>
+        <td><span style='color:#ff00ff;'>总贡献: %(total_lines)d</span></td>
         <td>%(total_executed)d</td>
         <td>%(total_excluded)d</td>
-        <td>%(overall_covered)0.1f%%</td>
+        <td><span style='color:#ff00ff;'>总覆盖: %(overall_covered)0.1f%%</span></td>
       </tr>
     </tfoot>
     <tbody>
@@ -194,4 +205,34 @@ EXCEPTIONS_LINK = """\
 BOTTOM = """\
   </body>
 </html>
+"""
+
+
+
+
+NAV = """\
+<div class="nav">
+  <a href="%(prev_link)s">%(prev_label)s</a> &lt;&lt;
+  <a href="%(up_link)s">%(up_label)s</a>
+  &gt;&gt; <a href="%(next_link)s">%(next_label)s</a>
+</div>
+"""
+
+NAV_NO_PREV = """\
+<div class="nav">
+  <a href="%(up_link)s">%(up_label)s</a>
+  &gt;&gt; <a href="%(next_link)s">%(next_label)s</a>
+</div>
+"""
+
+NAV_NO_NEXT = """\
+<div class="nav">
+  <a href="%(prev_link)s">%(prev_label)s</a> &lt;&lt;
+  <a href="%(up_link)s">%(up_label)s</a>
+</div>
+"""
+NAV_NO = """\
+<div class="nav">
+  <a href="%(up_link)s">%(up_label)s</a>
+</div>
 """
