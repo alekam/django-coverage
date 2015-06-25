@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Copyright 2009 55 Minutes (http://www.55minutes.com)
 
@@ -15,9 +16,25 @@ limitations under the License.
 """
 
 import cgi, os
+import re
+import subprocess
 
 from django_coverage.utils.coverage_report.data_storage import ModuleVars
 from django_coverage.utils.coverage_report.templates import default_module_detail as module_detail
+from django_coverage.utils.module_tools.data_storage import Authors
+
+def get_code_authors(relative_path):
+    output = subprocess.check_output(["git", "blame", relative_path])
+    lines = output.split("\n")
+    return lines
+
+def get_code_last_auth(lines, index):
+    match = re.search("\s\((\w+)\s", lines[index])
+    if match:
+        return match.group(1)
+    else:
+        raise Exception("Author Not Found")
+
 
 def html_module_detail(filename, module_name, nav=None):
     """
@@ -54,21 +71,48 @@ def html_module_detail(filename, module_name, nav=None):
                  * ``%(line_status)s`` (ignored, executed, missed, excluded) used as CSS class
                    identifier to style the each source line.
                  * ``%(source_line)s``
+
     """
     if not nav:
         nav = {}
     m_vars = ModuleVars(module_name)
 
+    # 遍历每一个module, 并且将它的coverage可视化出来
     m_vars.source_lines = source_lines = list()
     i = 0
-    for i, source_line in enumerate(
-        [cgi.escape(l.rstrip()) for l in open(m_vars.source_file, 'r').readlines()]):
+
+
+    add_auth_coverage = Authors().add_auth_coverage
+
+    module_path = module_name.replace(".", "/") + ".py"
+    code_blame_lines = get_code_authors(module_path)
+
+    for i, source_line in enumerate([cgi.escape(l.rstrip()) for l in open(m_vars.source_file, 'r').readlines()]):
+        try:
+            author = get_code_last_auth(code_blame_lines, i)
+        except:
+            author = ""
+
         line_status = 'ignored'
-        if i+1 in m_vars.executed: line_status = 'executed'
-        if i+1 in m_vars.excluded: line_status = 'excluded'
-        if i+1 in m_vars.missed: line_status = 'missed'
-        source_lines.append(module_detail.SOURCE_LINE %vars())
-    m_vars.ignored_count = i+1 - m_vars.total_count
+        line_idx = i + 1
+        if line_idx in m_vars.executed:
+            line_status = 'executed'
+            add_auth_coverage(author, module_name, 1, 0, 0)
+
+        if line_idx in m_vars.excluded:
+            line_status = 'excluded'
+            add_auth_coverage(author, module_name, 0, 1, 0)
+
+        if line_idx in m_vars.missed:
+            line_status = 'missed'
+            add_auth_coverage(author, module_name, 0, 0, 1)
+
+        source_lines.append(module_detail.SOURCE_LINE % vars())
+
+
+
+
+    m_vars.ignored_count = i + 1 - m_vars.total_count
     m_vars.source_lines = os.linesep.join(source_lines)
 
     if 'prev_link' in nav and 'next_link' in nav:

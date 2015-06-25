@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Copyright 2009 55 Minutes (http://www.55minutes.com)
 
@@ -15,6 +16,8 @@ limitations under the License.
 """
 
 import os, time
+from django_coverage.utils.module_tools.data_storage import Authors
+
 try:
     from urllib import pathname2url as p2url
 except ImportError:
@@ -87,6 +90,7 @@ def html_report(outdir, modules, excludes=None, errors=None):
     total_excluded = 0
     total_stmts = 0
     module_stats = list()
+
     m_names = list(modules.keys())
     m_names.sort()
     for n in m_names:
@@ -95,8 +99,10 @@ def html_report(outdir, modules, excludes=None, errors=None):
             excludes.append(m_vars.module_name)
             del modules[n]
             continue
+
+        # 每个独立的moudle都会有自己的html报表
         m_vars.module_link = p2url(os.path.join(m_subdirname, m_vars.module_name + '.html'))
-        module_stats.append(module_index.MODULE_STAT %m_vars.__dict__)
+        module_stats.append(module_index.MODULE_STAT % m_vars.__dict__)
         total_lines += m_vars.total_count
         total_executed += m_vars.executed_count
         total_excluded += m_vars.excluded_count
@@ -107,13 +113,19 @@ def html_report(outdir, modules, excludes=None, errors=None):
     else:
         overall_covered = 0.0
 
+    # 单独处理每一个Modules
     m_names = list(modules.keys())
     m_names.sort()
     i = 0
     for i, n in enumerate(m_names):
+        #
+        # 链接关系:
+        # index.html <---> module.html
+        #
         m_vars = ModuleVars(n)
-        nav = dict(up_link=p2url(os.path.join('..', 'index.html')),
-                   up_label='index')
+        nav = dict(up_link=p2url(os.path.join('..', 'index.html')), up_label='index')
+
+        # module之间的前后关系
         if i > 0:
             m = ModuleVars(m_names[i-1])
             nav['prev_link'] = os.path.basename(m.module_link)
@@ -122,24 +134,33 @@ def html_report(outdir, modules, excludes=None, errors=None):
             m = ModuleVars(m_names[i+1])
             nav['next_link'] = os.path.basename(m.module_link)
             nav['next_label'] = m.module_name
-        html_module_detail(
-            os.path.join(m_dir, m_vars.module_name + '.html'), n, nav)
 
+        html_module_detail(os.path.join(m_dir, m_vars.module_name + '.html'), n, nav)
+
+    # 以用户为中心输出统计结果:
+
+    output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered)
+
+    #
+    # 统计结果的首页
+    #
     fo = open(os.path.join(outdir, 'index.html'), 'w+')
     fo.write(module_index.TOP)
-    fo.write(module_index.CONTENT_HEADER %vars())
-    fo.write(module_index.CONTENT_BODY %vars())
+    # test_timestamp 当前的时间戳
+    fo.write(module_index.CONTENT_HEADER % vars())
+    fo.write(module_index.CONTENT_BODY % vars())
+
     if excludes:
         _file = 'excludes.html'
         exceptions_link = _file
         exception_desc = "Excluded packages and modules"
-        fo.write(module_index.EXCEPTIONS_LINK %vars())
+        fo.write(module_index.EXCEPTIONS_LINK % vars())
         html_module_excludes(os.path.join(outdir, _file), excludes)
     if errors:
         _file = 'errors.html'
         exceptions_link = _file
         exception_desc = "Error packages and modules"
-        fo.write(module_index.EXCEPTIONS_LINK %vars())
+        fo.write(module_index.EXCEPTIONS_LINK % vars())
         html_module_errors(os.path.join(outdir, _file), errors)
     fo.write(module_index.BOTTOM)
     fo.close()
@@ -152,3 +173,94 @@ def html_report(outdir, modules, excludes=None, errors=None):
             '%s.png' % int(overall_covered)
         ), 'rb').read()
         open(os.path.join(outdir, 'coverage_status.png'), 'wb').write(badge)
+
+def output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered):
+
+
+    m_subdirname = "author"
+    m_dir = os.path.join(outdir, m_subdirname)
+    if not os.path.exists(m_dir):
+        os.makedirs(m_dir)
+
+    authors_sig = Authors()
+    author_2_modules = authors_sig.author_2_modules
+    authors = author_2_modules.keys()
+    authors.sort()
+
+    module_stats = []
+    for author in authors:
+        module_link = p2url(os.path.join(m_subdirname, author + '.html'))
+        module_name = author
+        # executed, missed, excluded, total, "100%"
+        executed_count, missed, excluded_count, total_count, percent_covered = authors_sig.get_author_summary(author)
+        severity = 'normal'
+        if percent_covered < 75: severity = 'warning'
+        if percent_covered < 50: severity = 'critical'
+
+        module_stats.append(module_index.MODULE_STAT % vars())
+
+        output_author_html(outdir, authors_sig.author_2_modules[author], author)
+
+
+    module_stats = os.linesep.join(module_stats)
+
+
+    fo = open(os.path.join(outdir, 'auth_index.html'), 'w+')
+    fo.write(module_index.TOP)
+    # test_timestamp 当前的时间戳
+    # fo.write(module_index.CONTENT_HEADER % vars())
+    fo.write(module_index.CONTENT_BODY % vars())
+
+    fo.write(module_index.BOTTOM)
+    fo.close()
+
+def output_author_html(outdir, modules, author):
+
+    m_subdirname = "author"
+    m_dir = os.path.join(outdir, m_subdirname)
+    if not os.path.exists(m_dir):
+        os.makedirs(m_dir)
+
+    # authors_sig = Authors()
+    # author_2_modules = authors_sig.author_2_modules
+    # authors = author_2_modules.keys()
+    # authors.sort()
+
+    module_names = modules.keys()
+    module_names.sort()
+
+    module_stats = []
+    for module_name in module_names:
+
+        author_module = modules[module_name]
+        module_link = author_module.module_link
+
+        executed_count = author_module.executed
+        missed = author_module.missed
+        excluded = author_module.excluded
+        percent_covered = executed_count / max((executed_count + missed), 1.0) * 100
+
+        severity = 'normal'
+        if percent_covered < 75: severity = 'warning'
+        if percent_covered < 50: severity = 'critical'
+
+        module_stats.append(module_index.MODULE_STAT % vars())
+
+
+    module_stats = os.linesep.join(module_stats)
+
+
+    fo = open(os.path.join(outdir, 'author', author + '.html'), 'w+')
+    fo.write(module_index.TOP)
+    # test_timestamp 当前的时间戳
+    # fo.write(module_index.CONTENT_HEADER % vars())
+
+    executed_count, missed, excluded_count, total_count, percent_covered = Authors().get_author_summary(author)
+    severity = 'normal'
+    if percent_covered < 75: severity = 'warning'
+    if percent_covered < 50: severity = 'critical'
+    fo.write(module_index.CONTENT_BODY % vars())
+
+    fo.write(module_index.BOTTOM)
+    fo.close()
+

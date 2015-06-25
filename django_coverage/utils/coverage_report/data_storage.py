@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Copyright 2009 55 Minutes (http://www.55minutes.com)
 
@@ -16,15 +17,11 @@ limitations under the License.
 
 import coverage, time
 
-try:
-    set
-except:
-    from sets import Set as set
-
-
 class ModuleVars(object):
     modules = dict()
+
     def __new__(cls, module_name, module=None):
+        # ModuleVars 是按照 module_name 唯一的
         if cls.modules.get(module_name, None):
             return cls.modules.get(module_name)
         else:
@@ -34,10 +31,13 @@ class ModuleVars(object):
             return obj
 
     def _init(self, module_name, module):
+        # 从coverage获取统计数据
         source_file, stmts, excluded, missed, missed_display = coverage.analysis2(module)
+
         executed = list(set(stmts).difference(missed))
         total = list(set(stmts).union(excluded))
         total.sort()
+
         title = module.__name__
         total_count = len(total)
         executed_count = len(executed)
@@ -48,10 +48,12 @@ class ModuleVars(object):
         except ZeroDivisionError:
             percent_covered = 100
         test_timestamp = time.strftime('%a %Y-%m-%d %H:%M %Z')
+
         severity = 'normal'
         if percent_covered < 75: severity = 'warning'
         if percent_covered < 50: severity = 'critical'
 
+        # 将当前的局部变量设置到ModuleVars中
         for k, v in locals().items():
             setattr(self, k, v)
 

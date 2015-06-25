@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Copyright 2009 55 Minutes (http://www.55minutes.com)
 
@@ -37,35 +38,30 @@ TOP = """\
         font-size: 13px;
       }
 
-      tr:hover
-      {
+      tr:hover {
         background: #f5f5f5;
       }
       
-      #content-header
-      {
+      #content-header {
         margin-left: 50px;
       }
 
-      #content-header h1
-      {
+      #content-header h1 {
         font-size: 18px;
         margin-bottom: 0;
       }
 
-      #content-header p
-      {
+      #content-header p {
         font-size: 13px;
         margin: 0;
         color: #909090;
       }
       
-      #result-list table
-      {
+      #result-list table {
         font-size: 13px;
         background: white;
         margin: 15px 50px;
-        width: 600px;
+        width: 1000px;
         border-collapse: collapse;
         text-align: right;
       }
@@ -137,9 +133,13 @@ CONTENT_HEADER = """\
   <h1>Test Coverage Report</h1>
   <p>Generated: %(test_timestamp)s</p>
   <p><img src="coverage_status.png"></p>
+  <p><a target=_blank href="auth_index.html">按照作者查看</a></p>
 </div>
 """
 
+#
+# thead, tfoot是语义标签，和出现的位置无关; tfoot即便放在前面，最终展示的时候也是在table的底部
+#
 CONTENT_BODY = """\
 <div id="result-list">
   <table>
@@ -172,6 +172,7 @@ CONTENT_BODY = """\
 </div>
 """
 
+# 每一行统计的结果
 MODULE_STAT = """\
 <tr>
   <td class="module-name"><a href="%(module_link)s">%(module_name)s</a></td>

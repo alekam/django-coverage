@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Copyright 2009 55 Minutes (http://www.55minutes.com)
 
@@ -43,7 +44,8 @@ DjangoTestSuiteRunner = get_runner(global_settings)
 
 class CoverageRunner(DjangoTestSuiteRunner):
     """
-    Test runner which displays a code coverage report at the end of the run.
+        跑Coverage时默认使用的TestSuiteRunner
+        Test runner which displays a code coverage report at the end of the run.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -68,6 +70,7 @@ class CoverageRunner(DjangoTestSuiteRunner):
         return '.'.join(app_model_module.__name__.split('.')[:-1])
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
+        # 1. 设置coverage
         coverage.use_cache(settings.COVERAGE_USE_CACHE)
         for e in settings.COVERAGE_CODE_EXCLUDES:
             coverage.exclude(e)
@@ -76,6 +79,7 @@ class CoverageRunner(DjangoTestSuiteRunner):
                                                         extra_tests, **kwargs)
         coverage.stop()
 
+        # 2. 添加coverage_modules
         coverage_modules = []
         if test_labels:
             for label in test_labels:
@@ -88,9 +92,8 @@ class CoverageRunner(DjangoTestSuiteRunner):
 
         coverage_modules.extend(settings.COVERAGE_ADDITIONAL_MODULES)
 
-        packages, modules, excludes, errors = get_all_modules(
-            coverage_modules, settings.COVERAGE_MODULE_EXCLUDES,
-            settings.COVERAGE_PATH_EXCLUDES)
+        # 加载所有的packages, modules等
+        packages, modules, excludes, errors = get_all_modules(coverage_modules, settings.COVERAGE_MODULE_EXCLUDES, settings.COVERAGE_PATH_EXCLUDES)
 
         if settings.COVERAGE_USE_STDOUT:
             coverage.report(list(modules.values()), show_missing=1)
@@ -110,9 +113,13 @@ class CoverageRunner(DjangoTestSuiteRunner):
                     print(e)
                 print("")
 
+        # 输出Html格式的数据
+        # modules: module_name --> module
+        #
         outdir = settings.COVERAGE_REPORT_HTML_OUTPUT_DIR
         if outdir:
             outdir = os.path.abspath(outdir)
+            # 默认使用55minutes的html表
             if settings.COVERAGE_CUSTOM_REPORTS:
                 html_report(outdir, modules, excludes, errors)
             else:

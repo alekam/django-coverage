@@ -110,19 +110,24 @@ TOP = """\
         margin-bottom: 24px;
       }
 
-      #source-listing ol 
-      {
+      #source-listing ol {
         padding: 0 0 0 50px;
         width: 90%%;
         font-family: monospace;
         list-style-position: outside;
       }
 
-      #source-listing ol li 
-      {
+      #source-listing ol li {
         line-height: 18px;
         font-size: small;
       }
+      #source-listing ol li span.author {
+         float:right;color:#696;
+      }
+      #source-listing ol li span.author.missed {
+        float:right;color:#900;
+      }
+
         
       #source-listing ol code 
       {
@@ -185,7 +190,7 @@ CONTENT_BODY = """\
 </div>
 """
 
-SOURCE_LINE = '<li class="%(line_status)s"><code>%(source_line)s</code></li>'
+SOURCE_LINE = '<li class="%(line_status)s"><code>%(source_line)s</code><span class="%(line_status)s author">%(author)s</span></li>'
 
 BOTTOM = """\
   </body>
