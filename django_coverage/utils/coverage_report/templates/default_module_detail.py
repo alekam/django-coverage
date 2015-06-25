@@ -212,6 +212,7 @@ SOURCE_LINE = '<li class="%(line_status)s"><code>%(source_line)s</code><span cla
 
 BOTTOM = """\
     <script src="../zepto.min.js"></script>
+    <script src="../filter.js"></script>
   </body>
 </html>
 """
