@@ -124,8 +124,8 @@ TOP = """\
       #source-listing ol li span.author {
          float:right;color:#696;
       }
-      #source-listing ol li span.author.missed {
-        float:right;color:#900;
+      #source-listing li.ignored.gray, #source-listing li.executed.gray, #source-listing li.missed.gray, #source-listing li.excluded.gray, #source-listing ol li.gray span.author {
+            color:#D4D4D4;
       }
 
         
@@ -134,6 +134,19 @@ TOP = """\
         padding:  0 .001em 0 0; /* Firefox doesn't render empty li's properly */
         font-size: medium;
         white-space: pre;
+      }
+
+      #authors {
+           padding: 10px 40px;font-size:18px;
+      }
+      #authors a, #authors a:hover, #authors a:visited {
+           color: red;
+           margin: 5px 10px 5px 0;
+           line-height: 150%;
+      }
+      #authors a.selected {
+          color: gray;
+          text-decoration:none;
       }
    </style>
   </head>
@@ -172,7 +185,7 @@ CONTENT_HEADER = """\
   </h1>
   <p>Generated: %(test_timestamp)s</p>
   <p>Source file: %(source_file)s</p>
-  <p>
+  <p style="font-size:18px;font-weight:bold;">
     Stats:
     <span class="executed">%(executed_count)d executed</span>,
     <span class="missed">%(missed_count)d missed</span>,
@@ -181,7 +194,12 @@ CONTENT_HEADER = """\
   </p> 
 </div>
 """
-
+CONTENT_FILTER = """\
+<div id="authors">
+    作者筛选:<br/>
+    %(authors)s
+</div>
+"""
 CONTENT_BODY = """\
 <div id="source-listing">
   <ol>
@@ -193,6 +211,7 @@ CONTENT_BODY = """\
 SOURCE_LINE = '<li class="%(line_status)s"><code>%(source_line)s</code><span class="%(line_status)s author">%(author)s</span></li>'
 
 BOTTOM = """\
+    <script src="../zepto.min.js"></script>
   </body>
 </html>
 """

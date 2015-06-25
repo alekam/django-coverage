@@ -174,6 +174,12 @@ def html_report(outdir, modules, excludes=None, errors=None):
         badge = open(os.path.join(os.path.dirname(__file__), 'badges', settings.COVERAGE_BADGE_TYPE, '%s.png' % int(overall_covered)), 'rb').read()
         open(os.path.join(outdir, 'coverage_status.png'), 'wb').write(badge)
 
+    # 最后拷贝JS
+    js_files = ["zepto.min.js", 'sorttable.js']
+    for js_file in js_files:
+        js_data = open(os.path.join(os.path.dirname(__file__), js_file), 'rb').read()
+        open(os.path.join(outdir, js_file), "wb").write(js_data)
+
 def output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered):
     """
     将所有的authors的统计数据导出
@@ -231,6 +237,7 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
 
     fo.write(module_index.BOTTOM)
     fo.close()
+
 
 def output_author_html(outdir, modules, author, test_timestamp, authors, index):
     """
@@ -309,6 +316,6 @@ def output_author_html(outdir, modules, author, test_timestamp, authors, index):
     if overall_covered < 50: severity = 'critical'
     fo.write(module_index.CONTENT_BODY % vars())
 
-    fo.write(module_index.BOTTOM)
+    fo.write(module_index.BOTTOM_AUTH)
     fo.close()
 

@@ -87,11 +87,14 @@ def html_module_detail(filename, module_name, nav=None):
     module_path = module_name.replace(".", "/") + ".py"
     code_blame_lines = get_code_authors(module_path)
 
+    authors = set()
     for i, source_line in enumerate([cgi.escape(l.rstrip()) for l in open(m_vars.source_file, 'r').readlines()]):
         try:
             author = get_code_last_auth(code_blame_lines, i)
         except:
             author = ""
+        if author:
+            authors.add(author)
 
         line_status = 'ignored'
         line_idx = i + 1
@@ -116,6 +119,13 @@ def html_module_detail(filename, module_name, nav=None):
     m_vars.ignored_count = i + 1 - m_vars.total_count
     m_vars.source_lines = os.linesep.join(source_lines)
 
+    authors_html = []
+    authors_html.append('<a href="javascript:void(0)" class="selected">全部</a>')
+    for author in authors:
+        authors_html.append('<a href="javascript:void(0)">' + author + '</a>')
+
+    authors_html = "".join(authors_html)
+
     if 'prev_link' in nav and 'next_link' in nav:
         nav_html = module_detail.NAV %nav
     elif 'prev_link' in nav:
@@ -126,11 +136,12 @@ def html_module_detail(filename, module_name, nav=None):
         nav_html = None
 
     fo = open(filename, 'w+')
-    fo.write(module_detail.TOP %m_vars.__dict__)
+    fo.write(module_detail.TOP % m_vars.__dict__)
     if nav and nav_html:
         fo.write(nav_html)
-    fo.write(module_detail.CONTENT_HEADER %m_vars.__dict__)
-    fo.write(module_detail.CONTENT_BODY %m_vars.__dict__)
+    fo.write(module_detail.CONTENT_FILTER % authors_html)
+    fo.write(module_detail.CONTENT_HEADER % m_vars.__dict__)
+    fo.write(module_detail.CONTENT_BODY % m_vars.__dict__)
     if nav and nav_html:
         fo.write(nav_html)
     fo.write(module_detail.BOTTOM)

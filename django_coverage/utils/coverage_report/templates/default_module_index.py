@@ -153,12 +153,8 @@ CONTENT_HEADER_AUTHOR = """\
 #
 CONTENT_BODY = """\
 <div id="result-list">
-  <table>
+  <table class="sortable">
     <thead>
-      <tr>
-        <th>&nbsp;</th>
-        <th colspan="3" class="statements">代码执行情况</th>
-      </tr>
       <tr class="last">
         <th class="module-name">模块</th>
         <th>总行数</th>
@@ -203,6 +199,12 @@ EXCEPTIONS_LINK = """\
 """
 
 BOTTOM = """\
+  <script src="sorttable.js"></script>
+  </body>
+</html>
+"""
+BOTTOM_AUTH = """\
+  <script src="../sorttable.js"></script>
   </body>
 </html>
 """
