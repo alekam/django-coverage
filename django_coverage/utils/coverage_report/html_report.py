@@ -30,6 +30,10 @@ from django_coverage.utils.coverage_report.html_module_excludes import html_modu
 from django_coverage.utils.coverage_report.templates import default_module_index as module_index
 from django_coverage import settings
 
+
+SUBDIR_MODULE = "modules"
+SUBDIR_AUTHOR = "authors"
+
 def html_report(outdir, modules, excludes=None, errors=None):
     """
     Creates an ``index.html`` in the specified ``outdir``. Also attempts to create
@@ -175,10 +179,18 @@ def html_report(outdir, modules, excludes=None, errors=None):
         open(os.path.join(outdir, 'coverage_status.png'), 'wb').write(badge)
 
 def output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered):
-
-
-    m_subdirname = "author"
-    m_dir = os.path.join(outdir, m_subdirname)
+    """
+    将所有的authors的统计数据导出
+    :param outdir:
+    :param test_timestamp:
+    :param total_lines:
+    :param total_executed:
+    :param total_excluded:
+    :param total_stmts:
+    :param overall_covered:
+    :return:
+    """
+    m_dir = os.path.join(outdir, SUBDIR_AUTHOR)
     if not os.path.exists(m_dir):
         os.makedirs(m_dir)
 
@@ -189,7 +201,7 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
 
     module_stats = []
     for author in authors:
-        module_link = p2url(os.path.join(m_subdirname, author + '.html'))
+        module_link = p2url(os.path.join(SUBDIR_AUTHOR, author + '.html'))
         module_name = author
         # executed, missed, excluded, total, "100%"
         executed_count, missed, excluded_count, total_count, percent_covered = authors_sig.get_author_summary(author)
@@ -215,17 +227,19 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
     fo.close()
 
 def output_author_html(outdir, modules, author):
-
-    m_subdirname = "author"
-    m_dir = os.path.join(outdir, m_subdirname)
+    """
+    将单个用户的数据输出到html文件中
+    :param outdir:
+    :param modules:
+    :param author:
+    :return:
+    """
+    # 1. 确保 authors目录存在
+    m_dir = os.path.join(outdir, SUBDIR_AUTHOR)
     if not os.path.exists(m_dir):
         os.makedirs(m_dir)
 
-    # authors_sig = Authors()
-    # author_2_modules = authors_sig.author_2_modules
-    # authors = author_2_modules.keys()
-    # authors.sort()
-
+    # 2. 将modules排序
     module_names = modules.keys()
     module_names.sort()
 
@@ -233,12 +247,14 @@ def output_author_html(outdir, modules, author):
     for module_name in module_names:
 
         author_module = modules[module_name]
-        module_link = author_module.module_link
+        # 当前的html的url为: authors/author.html, 需要跳转到: modules/xxxx.html, 因此需要使用相对路径
+        module_link = "../" + author_module.module_link
 
         executed_count = author_module.executed
         missed = author_module.missed
-        excluded = author_module.excluded
+        excluded_count = author_module.excluded
         percent_covered = executed_count / max((executed_count + missed), 1.0) * 100
+        total_count = executed_count + missed
 
         severity = 'normal'
         if percent_covered < 75: severity = 'warning'
@@ -250,15 +266,13 @@ def output_author_html(outdir, modules, author):
     module_stats = os.linesep.join(module_stats)
 
 
-    fo = open(os.path.join(outdir, 'author', author + '.html'), 'w+')
+    fo = open(os.path.join(outdir, SUBDIR_AUTHOR, author + '.html'), 'w+')
     fo.write(module_index.TOP)
-    # test_timestamp 当前的时间戳
-    # fo.write(module_index.CONTENT_HEADER % vars())
-
-    executed_count, missed, excluded_count, total_count, percent_covered = Authors().get_author_summary(author)
+    
+    total_executed, missed, total_excluded, total_lines, overall_covered = Authors().get_author_summary(author)
     severity = 'normal'
-    if percent_covered < 75: severity = 'warning'
-    if percent_covered < 50: severity = 'critical'
+    if overall_covered < 75: severity = 'warning'
+    if overall_covered < 50: severity = 'critical'
     fo.write(module_index.CONTENT_BODY % vars())
 
     fo.write(module_index.BOTTOM)

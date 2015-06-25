@@ -65,6 +65,11 @@ class Authors(Singleton):
 
 
     def get_author_summary(self, author):
+        """
+        获取指定author的代码的覆盖情况(以可执行的代码为准)
+        :param author:
+        :return:
+        """
         if author in self.author_2_modules:
             modules = self.author_2_modules[author]
             executed, missed, excluded = 0, 0, 0

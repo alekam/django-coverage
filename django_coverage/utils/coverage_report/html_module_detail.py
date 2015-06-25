@@ -97,15 +97,16 @@ def html_module_detail(filename, module_name, nav=None):
         line_idx = i + 1
         if line_idx in m_vars.executed:
             line_status = 'executed'
+            # executed, missed, excluded
             add_auth_coverage(author, module_name, 1, 0, 0)
 
         if line_idx in m_vars.excluded:
             line_status = 'excluded'
-            add_auth_coverage(author, module_name, 0, 1, 0)
+            add_auth_coverage(author, module_name, 0, 0, 1)
 
         if line_idx in m_vars.missed:
             line_status = 'missed'
-            add_auth_coverage(author, module_name, 0, 0, 1)
+            add_auth_coverage(author, module_name, 0, 1, 0)
 
         source_lines.append(module_detail.SOURCE_LINE % vars())
 
