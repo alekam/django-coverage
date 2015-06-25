@@ -197,7 +197,7 @@ CONTENT_HEADER = """\
 CONTENT_FILTER = """\
 <div id="authors">
     作者筛选:<br/>
-    %(authors)s
+    %(authors_html)s
 </div>
 """
 CONTENT_BODY = """\

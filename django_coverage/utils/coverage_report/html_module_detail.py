@@ -139,8 +139,9 @@ def html_module_detail(filename, module_name, nav=None):
     fo.write(module_detail.TOP % m_vars.__dict__)
     if nav and nav_html:
         fo.write(nav_html)
-    fo.write(module_detail.CONTENT_FILTER % authors_html)
+
     fo.write(module_detail.CONTENT_HEADER % m_vars.__dict__)
+    fo.write(module_detail.CONTENT_FILTER % vars())
     fo.write(module_detail.CONTENT_BODY % m_vars.__dict__)
     if nav and nav_html:
         fo.write(nav_html)
