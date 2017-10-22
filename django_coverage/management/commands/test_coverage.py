@@ -16,9 +16,14 @@ limitations under the License.
 
 from django.conf import settings
 from django.core.management import call_command
-from django.core.management.commands import test
+
+try:
+    from test_without_migrations.management.commands import test
+except ImportError:
+    from django.core.management.commands import test
 
 from django_coverage import settings as coverage_settings
+
 
 class Command(test.Command):
     help = ("Runs the test suite for the specified applications, or the "
@@ -35,4 +40,3 @@ class Command(test.Command):
         coverage_settings.ORIG_TEST_RUNNER = settings.TEST_RUNNER
         settings.TEST_RUNNER = coverage_settings.COVERAGE_TEST_RUNNER
         call_command('test', *test_labels, **options)
-
