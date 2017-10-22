@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from django.utils.translation import ugettext as _
+
 
 TOP = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -195,12 +197,14 @@ CONTENT_HEADER = """\
   </p> 
 </div>
 """
-CONTENT_FILTER = """\
+
+CONTENT_FILTER = u"""\
 <div id="authors">
-    作者筛选:<br/>
+    """ + _("Authors List") + u""":<br/>
     %(authors_html)s
 </div>
 """
+
 CONTENT_BODY = """\
 <div id="source-listing">
   <ol>

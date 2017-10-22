@@ -19,6 +19,8 @@ import cgi, os
 import re
 import subprocess
 
+from django.utils.translation import ugettext as _
+
 from django_coverage.utils.coverage_report.data_storage import ModuleVars
 from django_coverage.utils.coverage_report.templates import default_module_detail as module_detail
 from django_coverage.utils.module_tools.data_storage import Authors
@@ -129,9 +131,9 @@ def html_module_detail(filename, module_name, nav=None):
     m_vars.source_lines = os.linesep.join(source_lines)
 
     authors_html = []
-    authors_html.append('<a href="javascript:void(0)" class="selected">全部</a>')
+    authors_html.append('<a href="javascript:void(0)" class="selected">%s</a>' % _('Full list'))
     for author in authors:
-        authors_html.append('<a href="javascript:void(0)">' + author + '</a>')
+        authors_html.append('<a href="javascript:void(0)">%s</a>' % author)
 
     authors_html = "".join(authors_html)
 
@@ -144,7 +146,7 @@ def html_module_detail(filename, module_name, nav=None):
     else:
         nav_html = None
 
-    fo = open(filename, 'wb+')
+    fo = open(filename, 'w+')
     fo.write(module_detail.TOP % m_vars.__dict__)
     if nav and nav_html:
         fo.write(nav_html)

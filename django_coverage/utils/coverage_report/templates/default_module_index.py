@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from django.utils.translation import ugettext as _
+
 
 TOP = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -132,19 +134,18 @@ TOP = """\
 
 CONTENT_HEADER = """\
 <div id="content-header">
-  <h1>TestCase覆盖率报告</h1>
-  <p>报告生成时间: %(test_timestamp)s</p>
+  <h1>""" + _('Test Coverage Report') + """</h1>
+  <p>""" + _('Generated') + """: %(test_timestamp)s</p>
   <p><img src="coverage_status.png"></p>
-  <p><a target=_blank href="auth_index.html">按照作者查看</a></p>
+  <p><a target=_blank href="auth_index.html">""" + _('Authors') + """</a></p>
 </div>
 """
 
 
-
 CONTENT_HEADER_AUTHOR = """\
 <div id="content-header">
-  <h1>TestCase覆盖率报告: %(author)s</h1>
-  <p>报告生成时间: %(test_timestamp)s</p>
+  <h1>""" + _('Test Coverage Report') + """: %(author)s</h1>
+  <p>""" + _('Generated') + """: %(test_timestamp)s</p>
 </div>
 """
 
@@ -156,20 +157,20 @@ CONTENT_BODY = """\
   <table class="sortable">
     <thead>
       <tr class="last">
-        <th class="module-name">模块</th>
-        <th>总行数</th>
-        <th>执行行数</th>
-        <th>忽略行数</th>
-        <th>覆盖率</th>
+        <th class="module-name">""" + _('Module') + """</th>
+        <th>""" + _('total') + """</th>
+        <th>""" + _('executed') + """</th>
+        <th>""" + _('excluded') + """</th>
+        <th>""" + _('%% covered') + """</th>
       </tr>
     </thead>
     <tfoot>
       <tr>
-        <td class="module-name">Total</td>
-        <td><span style='color:#ff00ff;'>总贡献: %(total_lines)d</span></td>
+        <td class="module-name">""" + _('Total') + """</td>
+        <td><span style='color:#ff00ff;'>""" + _('Tolal lines') + """: %(total_lines)d</span></td>
         <td>%(total_executed)d</td>
         <td>%(total_excluded)d</td>
-        <td><span style='color:#ff00ff;'>总覆盖: %(overall_covered)0.1f%%</span></td>
+        <td><span style='color:#ff00ff;'>""" + _('Overall covered') + """: %(overall_covered)0.1f%%</span></td>
       </tr>
     </tfoot>
     <tbody>
@@ -208,8 +209,6 @@ BOTTOM_AUTH = """\
   </body>
 </html>
 """
-
-
 
 
 NAV = """\

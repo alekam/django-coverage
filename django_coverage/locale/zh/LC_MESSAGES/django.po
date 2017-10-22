@@ -1,0 +1,76 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-10-22 19:39+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: utils/coverage_report/html_module_detail.py:134
+msgid "Full list"
+msgstr "全部"
+
+#: utils/coverage_report/html_report.py:290
+msgid "All authors"
+msgstr "所有用户"
+
+#: utils/coverage_report/templates/default_module_detail.py:203
+msgid "Authors List"
+msgstr "作者筛选"
+
+#: utils/coverage_report/templates/default_module_index.py:137
+#: utils/coverage_report/templates/default_module_index.py:147
+msgid "Test Coverage Report"
+msgstr "TestCase覆盖率报告"
+
+#: utils/coverage_report/templates/default_module_index.py:138
+#: utils/coverage_report/templates/default_module_index.py:148
+msgid "Generated"
+msgstr "报告生成时间"
+
+#: utils/coverage_report/templates/default_module_index.py:140
+msgid "Authors"
+msgstr "按照作者查看"
+
+#: utils/coverage_report/templates/default_module_index.py:160
+msgid "Module"
+msgstr "模块"
+
+#: utils/coverage_report/templates/default_module_index.py:161
+msgid "total"
+msgstr "总行数"
+
+#: utils/coverage_report/templates/default_module_index.py:162
+msgid "executed"
+msgstr "执行行数"
+
+#: utils/coverage_report/templates/default_module_index.py:163
+msgid "excluded"
+msgstr "忽略行数"
+
+#: utils/coverage_report/templates/default_module_index.py:164
+#, python-format
+msgid "%% covered"
+msgstr "覆盖率"
+
+#: utils/coverage_report/templates/default_module_index.py:169
+msgid "Total"
+msgstr ""
+
+#: utils/coverage_report/templates/default_module_index.py:170
+msgid "Tolal lines"
+msgstr "总贡献"
+
+#: utils/coverage_report/templates/default_module_index.py:173
+msgid "Overall covered"
+msgstr "总覆盖"

@@ -17,13 +17,15 @@ limitations under the License.
 
 import os, time
 import datetime
-from django_coverage.utils.module_tools.data_storage import Authors
 
 try:
     from urllib import pathname2url as p2url
 except ImportError:
     from urllib.request import pathname2url as p2url
 
+from django.utils.translation import ugettext as _
+
+from django_coverage.utils.module_tools.data_storage import Authors
 from django_coverage.utils.coverage_report.data_storage import ModuleVars
 from django_coverage.utils.coverage_report.html_module_detail import html_module_detail
 from django_coverage.utils.coverage_report.html_module_errors import html_module_errors
@@ -180,6 +182,7 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
         js_data = open(os.path.join(os.path.dirname(__file__), js_file), 'rb').read()
         open(os.path.join(outdir, js_file), "wb").write(js_data)
 
+
 def output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered):
     """
     将所有的authors的统计数据导出
@@ -216,8 +219,10 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
         # executed, missed, excluded, total, "100%"
         executed_count, missed, excluded_count, total_count, percent_covered = authors_sig.get_author_summary(author)
         severity = 'normal'
-        if percent_covered < 75: severity = 'warning'
-        if percent_covered < 50: severity = 'critical'
+        if percent_covered < 75:
+            severity = 'warning'
+        if percent_covered < 50:
+            severity = 'critical'
 
         module_stats.append(module_index.MODULE_STAT % vars())
 
@@ -225,9 +230,7 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
 
         index += 1
 
-
     module_stats = os.linesep.join(module_stats)
-
 
     fo = open(os.path.join(outdir, 'auth_index.html'), 'w+')
     fo.write(module_index.TOP)
@@ -275,9 +278,7 @@ def output_author_html(outdir, modules, author, test_timestamp, authors, index):
 
         module_stats.append(module_index.MODULE_STAT % vars())
 
-
     module_stats = os.linesep.join(module_stats)
-
 
     fo = open(os.path.join(outdir, SUBDIR_AUTHOR, author + '.html'), 'w+')
     fo.write(module_index.TOP)
@@ -286,7 +287,7 @@ def output_author_html(outdir, modules, author, test_timestamp, authors, index):
     has_no_next = index == len(authors) - 1
 
     up_link = "../auth_index.html"
-    up_label = "所有用户"
+    up_label = _("All authors")
     if not has_no_prev:
         prev_link = "../" +  Authors.author_2_url[authors[index - 1]]
         prev_label = authors[index - 1]
@@ -294,7 +295,6 @@ def output_author_html(outdir, modules, author, test_timestamp, authors, index):
     if not has_no_next:
         next_link = "../" +  Authors.author_2_url[authors[index + 1]]
         next_label = authors[index + 1]
-
 
     if has_no_prev and has_no_next:
         nav_html = module_index.NAV_NO % vars()
@@ -312,10 +312,11 @@ def output_author_html(outdir, modules, author, test_timestamp, authors, index):
 
     total_executed, missed, total_excluded, total_lines, overall_covered = Authors().get_author_summary(author)
     severity = 'normal'
-    if overall_covered < 75: severity = 'warning'
-    if overall_covered < 50: severity = 'critical'
+    if overall_covered < 75:
+        severity = 'warning'
+    if overall_covered < 50:
+        severity = 'critical'
     fo.write(module_index.CONTENT_BODY % vars())
 
     fo.write(module_index.BOTTOM_AUTH)
     fo.close()
-
