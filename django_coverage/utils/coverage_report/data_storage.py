@@ -15,22 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import coverage, time
+import time
 
 class ModuleVars(object):
     modules = dict()
 
-    def __new__(cls, module_name, module=None):
+    def __new__(cls, module_name, module=None, coverage=None):
         # ModuleVars 是按照 module_name 唯一的
         if cls.modules.get(module_name, None):
             return cls.modules.get(module_name)
         else:
             obj=super(ModuleVars, cls).__new__(cls)
-            obj._init(module_name, module)
+            obj._init(module_name, module, coverage)
             cls.modules[module_name] = obj
             return obj
 
-    def _init(self, module_name, module):
+    def _init(self, module_name, module, coverage):
         # 从coverage获取统计数据
         source_file, stmts, excluded, missed, missed_display = coverage.analysis2(module)
 
@@ -54,6 +54,6 @@ class ModuleVars(object):
         if percent_covered < 50: severity = 'critical'
 
         # 将当前的局部变量设置到ModuleVars中
-        for k, v in locals().items():
+        for k, v in locals().iteritems():
             setattr(self, k, v)
 

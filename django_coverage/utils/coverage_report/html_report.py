@@ -35,7 +35,7 @@ from django_coverage import settings
 SUBDIR_MODULE = "modules"
 SUBDIR_AUTHOR = "authors"
 
-def html_report(outdir, modules, excludes=None, errors=None):
+def html_report(coverage, outdir, modules, excludes=None, errors=None):
     """
     Creates an ``index.html`` in the specified ``outdir``. Also attempts to create
     a ``modules`` subdirectory to create module detail html pages, which are named
@@ -96,10 +96,10 @@ def html_report(outdir, modules, excludes=None, errors=None):
     total_stmts = 0
     module_stats = list()
 
-    m_names = list(modules.keys())
+    m_names = modules.keys()
     m_names.sort()
     for n in m_names:
-        m_vars = ModuleVars(n, modules[n])
+        m_vars = ModuleVars(n, modules[n], coverage)
         if not m_vars.total_count:
             excludes.append(m_vars.module_name)
             del modules[n]
@@ -119,7 +119,7 @@ def html_report(outdir, modules, excludes=None, errors=None):
         overall_covered = 0.0
 
     # 单独处理每一个Modules
-    m_names = list(modules.keys())
+    m_names = modules.keys()
     m_names.sort()
     i = 0
     for i, n in enumerate(m_names):
@@ -132,11 +132,11 @@ def html_report(outdir, modules, excludes=None, errors=None):
 
         # module之间的前后关系
         if i > 0:
-            m = ModuleVars(m_names[i-1])
+            m = ModuleVars(m_names[i-1], coverage)
             nav['prev_link'] = os.path.basename(m.module_link)
             nav['prev_label'] = m.module_name
         if i+1 < len(modules):
-            m = ModuleVars(m_names[i+1])
+            m = ModuleVars(m_names[i+1], coverage)
             nav['next_link'] = os.path.basename(m.module_link)
             nav['next_label'] = m.module_name
 

@@ -85,14 +85,26 @@ def html_module_detail(filename, module_name, nav=None):
     add_auth_coverage = Authors().add_auth_coverage
 
     module_path = module_name.replace(".", "/") + ".py"
-    code_blame_lines = get_code_authors(module_path)
+    
+    # TODO: если модуль грузится не из текущей папки то возникает ошибка
+#     print '---'
+#     print filename
+#     print module_path
+    
+    try:
+        code_blame_lines = get_code_authors(module_path)
+    except:
+        code_blame_lines = None
+#         import pdb;pdb.set_trace()
 
     authors = set()
-    for i, source_line in enumerate([cgi.escape(l.rstrip()) for l in open(m_vars.source_file, 'r').readlines()]):
-        try:
-            author = get_code_last_auth(code_blame_lines, i)
-        except:
-            author = ""
+    for i, source_line in enumerate([cgi.escape(l.rstrip()) for l in open(m_vars.source_file, 'rb').readlines()]):
+        author = ""
+        if code_blame_lines is not None:
+            try:
+                author = get_code_last_auth(code_blame_lines, i)
+            except:
+                pass
         if author:
             authors.add(author)
 
@@ -113,9 +125,6 @@ def html_module_detail(filename, module_name, nav=None):
 
         source_lines.append(module_detail.SOURCE_LINE % vars())
 
-
-
-
     m_vars.ignored_count = i + 1 - m_vars.total_count
     m_vars.source_lines = os.linesep.join(source_lines)
 
@@ -135,7 +144,7 @@ def html_module_detail(filename, module_name, nav=None):
     else:
         nav_html = None
 
-    fo = open(filename, 'w+')
+    fo = open(filename, 'wb+')
     fo.write(module_detail.TOP % m_vars.__dict__)
     if nav and nav_html:
         fo.write(nav_html)

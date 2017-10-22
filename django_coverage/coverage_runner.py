@@ -29,10 +29,9 @@ if django.VERSION < (1, 2):
     raise Exception(msg)
 
 from django.conf import global_settings
-from django.db.models import get_app, get_apps
 from django.test.utils import get_runner
 
-import coverage
+from coverage import Coverage
 
 from django_coverage import settings
 from django_coverage.utils.coverage_report import html_report
@@ -40,6 +39,26 @@ from django_coverage.utils.module_tools import get_all_modules
 
 
 DjangoTestSuiteRunner = get_runner(global_settings)
+
+def get_app(app_label):
+    try:
+        # django >= 1.7
+        from django.apps import apps
+        return apps.get_app_config(app_label).models_module
+    except ImportError:
+        from django.db import models
+        return models.get_app(app_label)
+
+
+def get_apps():
+    try:
+        # django >= 1.7, to support AppConfig
+        from django.apps import apps
+        return [app.models_module for app in apps.get_app_configs() if app.models_module]
+    except ImportError:
+        from django.db import models
+        return models.get_apps()
+
 
 
 class CoverageRunner(DjangoTestSuiteRunner):
@@ -71,7 +90,8 @@ class CoverageRunner(DjangoTestSuiteRunner):
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         # 1. 设置coverage
-        coverage.use_cache(settings.COVERAGE_USE_CACHE)
+        coverage = Coverage()
+#         coverage.use_cache(settings.COVERAGE_USE_CACHE)
         for e in settings.COVERAGE_CODE_EXCLUDES:
             coverage.exclude(e)
         coverage.start()
@@ -83,7 +103,7 @@ class CoverageRunner(DjangoTestSuiteRunner):
         coverage_modules = []
         if test_labels:
             for label in test_labels:
-                label = label.split('.')[0]
+                label = label.split('.')[0].rstrip('/')
                 app = get_app(label)
                 coverage_modules.append(self._get_app_package(app))
         else:
@@ -96,7 +116,7 @@ class CoverageRunner(DjangoTestSuiteRunner):
         packages, modules, excludes, errors = get_all_modules(coverage_modules, settings.COVERAGE_MODULE_EXCLUDES, settings.COVERAGE_PATH_EXCLUDES)
 
         if settings.COVERAGE_USE_STDOUT:
-            coverage.report(list(modules.values()), show_missing=1)
+            coverage.report(modules.values(), show_missing=1)
             if excludes:
                 message = "The following packages or modules were excluded:"
                 print("")
@@ -121,9 +141,9 @@ class CoverageRunner(DjangoTestSuiteRunner):
             outdir = os.path.abspath(outdir)
             # 默认使用55minutes的html表
             if settings.COVERAGE_CUSTOM_REPORTS:
-                html_report(outdir, modules, excludes, errors)
+                html_report(coverage, outdir, modules, excludes, errors)
             else:
-                coverage._the_coverage.html_report(list(modules.values()), outdir)
+                coverage.html_report(modules.values(), outdir)
             print("")
             print("HTML reports were output to '%s'" %outdir)
 

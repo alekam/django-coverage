@@ -28,25 +28,28 @@ class SingletonType(type):
         return cls.__instance__
 
 
-Singleton = SingletonType('SingletonMetaClass', (object,), {})
-
 # 单例如何使用呢?
 # Packages().packages
 # 1. 所有的 SingletonType 的实例，都具有__call__, 同时也是构造函数
-class Packages(Singleton):
+class Packages(object):
+    __metaclass__ = SingletonType
     packages = {}
 
 
-class Modules(Singleton):
+class Modules(object):
+    __metaclass__ = SingletonType
     modules = {}
 
 
-class Excluded(Singleton):
+class Excluded(object):
+    __metaclass__ = SingletonType
     excluded = []
 
 
-class Errors(Singleton):
+class Errors(object):
+    __metaclass__ = SingletonType
     errors = []
+
 
 class AuthorModule(object):
     module_link = ""
@@ -54,7 +57,9 @@ class AuthorModule(object):
     missed = 0
     excluded = 0
 
-class Authors(Singleton):
+
+class Authors(object):
+    __metaclass__ = SingletonType
     """
         数据结构:
 
@@ -120,4 +125,3 @@ class Authors(Singleton):
         module_info.executed += executed
         module_info.missed += missed
         module_info.excluded += excluded
-
