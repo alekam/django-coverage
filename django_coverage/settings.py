@@ -22,10 +22,15 @@ from django.conf import settings
 COVERAGE_TEST_RUNNER = getattr(settings, 'COVERAGE_TEST_RUNNER',
                              'django_coverage.coverage_runner.CoverageRunner')
 
-# Specify the coverage config file
-# Use False to not load any configfile
+# Specify the coverage config file
+# Use False to not load any configfile
 # specify config file path to load it. Example: ".coveragerc"
 COVERAGE_CONFIG_FILE = getattr(settings, 'COVERAGE_CONFIG_FILE', False)
+
+# source is a list of file paths or package names.
+# Only code located in the trees indicated by the file paths
+# or package names will be measured.
+COVERAGE_SOURCE = getattr(settings, 'COVERAGE_SOURCE', None)
 
 # Specify whether coverage data file is created or not.
 COVERAGE_USE_CACHE = getattr(settings, 'COVERAGE_USE_CACHE', False)
@@ -34,7 +39,7 @@ COVERAGE_USE_CACHE = getattr(settings, 'COVERAGE_USE_CACHE', False)
 # ignore as statements (e.g. ``raise NotImplemented``).
 # These statements are not figured in as part of the coverage statistics.
 # This setting is optional.
-COVERAGE_CODE_EXCLUDES = getattr(settings, 'COVERAGE_CODE_EXCLUDES',[
+COVERAGE_CODE_EXCLUDES = getattr(settings, 'COVERAGE_CODE_EXCLUDES', [
                                     'def __unicode__\(self\):',
                                     'def get_absolute_url\(self\):',
                                     'from .* import .*', 'import .*',
@@ -74,7 +79,7 @@ COVERAGE_MODULE_EXCLUDES = getattr(settings, 'COVERAGE_MODULE_EXCLUDES',
 # user account running the test.
 # You should probably set this one explicitly in your own settings file.
 
-#COVERAGE_REPORT_HTML_OUTPUT_DIR = '/my_home/test_html'
+# COVERAGE_REPORT_HTML_OUTPUT_DIR = '/my_home/test_html'
 COVERAGE_REPORT_HTML_OUTPUT_DIR = getattr(settings,
                                           'COVERAGE_REPORT_HTML_OUTPUT_DIR',
                                           None)

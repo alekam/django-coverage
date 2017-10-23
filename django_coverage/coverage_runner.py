@@ -90,8 +90,14 @@ class CoverageRunner(DjangoTestSuiteRunner):
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         # 1. 设置coverage
-        coverage = Coverage()
-#         coverage.use_cache(settings.COVERAGE_USE_CACHE)
+        opts = {
+            'auto_data': settings.COVERAGE_USE_CACHE,
+        }
+        if settings.COVERAGE_SOURCE:
+            opts['source'] = settings.COVERAGE_SOURCE
+        if settings.COVERAGE_CONFIG_FILE:
+            opts['config_file'] = settings.COVERAGE_CONFIG_FILE
+        coverage = Coverage(**opts)
         for e in settings.COVERAGE_CODE_EXCLUDES:
             coverage.exclude(e)
         coverage.start()
