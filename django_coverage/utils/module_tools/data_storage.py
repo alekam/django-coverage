@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-__all__ = ('Packages', 'Modules', 'Excluded', 'Errors')
+__all__ = ('Packages', 'Modules', 'Excluded', 'Errors', 'TemplateModule', 'Templates')
 
 
 class SingletonType(type):
@@ -92,11 +92,11 @@ class Authors(object):
         else:
             return None
 
-    def add_auth_coverage(self, author, module_name, executed, missed, excluded):
+    def add_auth_coverage(self, author, m_vars, executed, missed, excluded):
         """
         调整统计数据
         :param author:
-        :param module_name:
+        :param mod:
         :param executed:
         :param missed:
         :param excluded:
@@ -110,10 +110,10 @@ class Authors(object):
             modules = {}
             self.author_2_modules[author] = modules
 
+        module_name = m_vars.module_name
+
         module_info = modules.get(module_name)
         if module_info is None:
-            from django_coverage.utils.coverage_report import ModuleVars
-            m_vars = ModuleVars(module_name)
             module_link = m_vars.module_link
 
             # 初始化
@@ -125,3 +125,22 @@ class Authors(object):
         module_info.executed += executed
         module_info.missed += missed
         module_info.excluded += excluded
+
+
+class Templates(object):
+    __metaclass__ = SingletonType
+    templates = {}
+
+
+class TemplateModule(object):
+    """
+    Fake module
+    """
+    is_template_module = True
+
+    def __init__(self, name, path):
+        self.path = path
+        self.__path__ = path
+        self.name = name
+        self.__name__ = name
+        self.module_name = name

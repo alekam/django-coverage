@@ -45,6 +45,8 @@ COVERAGE_CODE_EXCLUDES = getattr(settings, 'COVERAGE_CODE_EXCLUDES', [
                                     'from .* import .*', 'import .*',
                                  ])
 
+COVERAGE_PROCESS_TEMPLATES = getattr(settings, 'COVERAGE_PROCESS_TEMPLATES', False)
+
 # Specify a list of regular expressions of paths to exclude from
 # coverage analysis.
 # Note these paths are ignored by the module introspection tool and take

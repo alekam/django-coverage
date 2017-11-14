@@ -18,23 +18,27 @@ limitations under the License.
 import os, re, sys
 from glob import glob
 
-from django_coverage.utils.module_tools.data_storage import *
-from django_coverage.utils.module_tools.module_loader import find_or_load_module
+from .data_storage import *
+from .module_loader import *
 
 try:
     set
 except:
     from sets import Set as set
 
+
 __all__ = ('get_all_modules',)
+
 
 def _build_pkg_path(pkg_name, pkg, path):
     for rp in [x for x in pkg.__path__ if path.startswith(x)]:
         p = path.replace(rp, '').replace(os.path.sep, '.')
         return pkg_name + p
 
+
 def _build_module_path(pkg_name, pkg, path):
     return _build_pkg_path(pkg_name, pkg, os.path.splitext(path)[0])
+
 
 def _prune_whitelist(whitelist, blacklist):
     """
@@ -53,6 +57,7 @@ def _prune_whitelist(whitelist, blacklist):
                 excluded.append(wp)
                 break
     return whitelist
+
 
 def _parse_module_list(m_list):
     packages = Packages().packages
@@ -87,6 +92,7 @@ def _parse_module_list(m_list):
         if not processed:
             packages[m_name] = module
 
+
 def prune_dirs(root, dirs, exclude_dirs):
     regexes = [re.compile(exclude_dir) for exclude_dir in exclude_dirs]  # 重复操作
     for path, dir_ in [(os.path.join(root, dir_), dir_) for dir_ in dirs]:
@@ -95,9 +101,11 @@ def prune_dirs(root, dirs, exclude_dirs):
                 dirs.remove(dir_)
                 break
 
+
 def _get_all_packages(pkg_name, pkg, blacklist, exclude_dirs):
     packages = Packages().packages
     errors = Errors().errors
+    templates = Templates().templates
 
     for path in pkg.__path__:
 
@@ -116,9 +124,23 @@ def _get_all_packages(pkg_name, pkg, blacklist, exclude_dirs):
                     for d in dirs[:]:
                         dirs.remove(d)
             except ImportError:
-                errors.append(m_name)
-                for d in dirs[:]:
-                    dirs.remove(d)
+                if m_name.endswith('.templates'):
+                    walk_templates_dir(m_name, root, dirs, files, templates)
+                else:
+                    errors.append(m_name)
+                    for d in dirs[:]:
+                        dirs.remove(d)
+
+
+def walk_templates_dir(m_name, root, dirs, files, templates):
+    for dir_ in dirs:
+        path = os.path.join(root, dir_)
+        n_name = u'.'.join([m_name, dir_])
+        for root_, dirs_, files_ in os.walk(path):
+            walk_templates_dir(n_name, root_, dirs_, files_, templates)
+    for f in files:
+        n_name = u'.'.join([m_name, f])
+        templates[n_name] = TemplateModule(n_name, os.path.join(root, f))
 
 
 def _get_all_modules(pkg_name, pkg, blacklist):
@@ -134,6 +156,9 @@ def _get_all_modules(pkg_name, pkg, blacklist):
                         m = find_or_load_module(m_name, [p])
                         modules[m_name] = m
                 except ImportError:
+                    # TOOD: smth. problem with imports here
+                    print '_get_all_modules - ImportError'
+                    print m_name
                     errors.append(m_name)
     except Exception as e:
         print 'Error occured! Bad module, check filesystem!'
@@ -153,6 +178,7 @@ def get_all_modules(whitelist, blacklist=None, exclude_dirs=None):
     modules = Modules().modules
     excluded = Excluded().excluded
     errors = Errors().errors
+    templates = Templates().templates
 
     whitelist = _prune_whitelist(whitelist, blacklist or [])
 
@@ -164,5 +190,8 @@ def get_all_modules(whitelist, blacklist=None, exclude_dirs=None):
 
     for pkg_name, pkg in packages.copy().iteritems():
         _get_all_modules(pkg_name, pkg, blacklist)
+
+    for m_name, m in templates.copy().iteritems():
+        modules[m_name] = m
 
     return packages, modules, list(set(excluded)), list(set(errors))

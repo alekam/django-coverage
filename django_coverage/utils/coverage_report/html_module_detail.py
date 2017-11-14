@@ -21,12 +21,11 @@ import subprocess
 
 from django.utils.translation import ugettext as _
 
-from django_coverage.utils.coverage_report.data_storage import ModuleVars
 from django_coverage.utils.coverage_report.templates import default_module_detail as module_detail
 from django_coverage.utils.module_tools.data_storage import Authors
 
-def get_code_authors(relative_path):
-    output = subprocess.check_output(["git", "blame", relative_path])
+def get_code_authors(relative_path, cwd=None):
+    output = subprocess.check_output(["git", "blame", relative_path], cwd=cwd)
     lines = output.split("\n")
     return lines
 
@@ -38,7 +37,7 @@ def get_code_last_auth(lines, index):
         raise Exception("Author Not Found")
 
 
-def html_module_detail(filename, module_name, nav=None):
+def html_module_detail(filename, m_vars, nav=None):
     """
     Creates a module detail report based on coverage testing at the specified
     filename. If ``nav`` is specified, the nav template will be used as well.
@@ -77,24 +76,19 @@ def html_module_detail(filename, module_name, nav=None):
     """
     if not nav:
         nav = {}
-    m_vars = ModuleVars(module_name)
+    
+    module_name = m_vars.module_name
 
     # 遍历每一个module, 并且将它的coverage可视化出来
     m_vars.source_lines = source_lines = list()
     i = 0
 
-
     add_auth_coverage = Authors().add_auth_coverage
 
-    module_path = module_name.replace(".", "/") + ".py"
-    
-    # TODO: если модуль грузится не из текущей папки то возникает ошибка
-#     print '---'
-#     print filename
-#     print module_path
-    
+    module_path = m_vars.get_module_path()
+    cwd = m_vars.get_module_dir()
     try:
-        code_blame_lines = get_code_authors(module_path)
+        code_blame_lines = get_code_authors(module_path, cwd)
     except:
         code_blame_lines = None
 #         import pdb;pdb.set_trace()
@@ -115,15 +109,15 @@ def html_module_detail(filename, module_name, nav=None):
         if line_idx in m_vars.executed:
             line_status = 'executed'
             # executed, missed, excluded
-            add_auth_coverage(author, module_name, 1, 0, 0)
+            add_auth_coverage(author, m_vars, 1, 0, 0)
 
         if line_idx in m_vars.excluded:
             line_status = 'excluded'
-            add_auth_coverage(author, module_name, 0, 0, 1)
+            add_auth_coverage(author, m_vars, 0, 0, 1)
 
         if line_idx in m_vars.missed:
             line_status = 'missed'
-            add_auth_coverage(author, module_name, 0, 1, 0)
+            add_auth_coverage(author, m_vars, 0, 1, 0)
 
         source_lines.append(module_detail.SOURCE_LINE % vars())
 
@@ -138,11 +132,11 @@ def html_module_detail(filename, module_name, nav=None):
     authors_html = "".join(authors_html)
 
     if 'prev_link' in nav and 'next_link' in nav:
-        nav_html = module_detail.NAV %nav
+        nav_html = module_detail.NAV % nav
     elif 'prev_link' in nav:
-        nav_html = module_detail.NAV_NO_NEXT %nav
+        nav_html = module_detail.NAV_NO_NEXT % nav
     elif 'next_link' in nav:
-        nav_html = module_detail.NAV_NO_PREV %nav
+        nav_html = module_detail.NAV_NO_PREV % nav
     else:
         nav_html = None
 

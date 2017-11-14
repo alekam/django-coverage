@@ -25,8 +25,8 @@ except ImportError:
 
 from django.utils.translation import ugettext as _
 
-from django_coverage.utils.module_tools.data_storage import Authors
-from django_coverage.utils.coverage_report.data_storage import ModuleVars
+from django_coverage.utils.module_tools.data_storage import Authors, TemplateModule
+from django_coverage.utils.coverage_report.data_storage import get_vars_class
 from django_coverage.utils.coverage_report.html_module_detail import html_module_detail
 from django_coverage.utils.coverage_report.html_module_errors import html_module_errors
 from django_coverage.utils.coverage_report.html_module_excludes import html_module_excludes
@@ -101,14 +101,19 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
     m_names = modules.keys()
     m_names.sort()
     for n in m_names:
-        m_vars = ModuleVars(n, modules[n], coverage)
+        mod = modules[n]
+        m_vars = get_vars_class(mod)(n, modules[n], coverage)
+#             m_vars = ModuleVars(n, mod, coverage)
         if not m_vars.total_count:
             excludes.append(m_vars.module_name)
             del modules[n]
             continue
 
         # 每个独立的moudle都会有自己的html报表
-        m_vars.module_link = p2url(os.path.join(SUBDIR_MODULE, m_vars.module_name + '.html'))
+        if isinstance(mod, TemplateModule):
+            m_vars.module_link = os.path.join(SUBDIR_MODULE, n + '.html')
+        else:
+            m_vars.module_link = p2url(os.path.join(SUBDIR_MODULE, m_vars.module_name + '.html'))
         module_stats.append(module_index.MODULE_STAT % m_vars.__dict__)
         total_lines += m_vars.total_count
         total_executed += m_vars.executed_count
@@ -116,7 +121,7 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
         total_stmts += len(m_vars.stmts)
     module_stats = os.linesep.join(module_stats)
     if total_stmts:
-        overall_covered = float(total_executed)/total_stmts*100
+        overall_covered = float(total_executed) / total_stmts * 100
     else:
         overall_covered = 0.0
 
@@ -129,20 +134,26 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
         # 链接关系:
         # index.html <---> module.html
         #
-        m_vars = ModuleVars(n)
+        mod = modules[n]
+        var_cls = get_vars_class(mod)
+        m_vars = var_cls(n)
         nav = dict(up_link=p2url(os.path.join('..', 'index.html')), up_label='index')
 
         # module之间的前后关系
         if i > 0:
-            m = ModuleVars(m_names[i-1], coverage)
+            mod_key = m_names[i - 1]
+            prev_mod = modules[mod_key]
+            m = get_vars_class(prev_mod)(mod_key, coverage=coverage)
             nav['prev_link'] = os.path.basename(m.module_link)
             nav['prev_label'] = m.module_name
-        if i+1 < len(modules):
-            m = ModuleVars(m_names[i+1], coverage)
+        if i + 1 < len(modules):
+            mod_key = m_names[i + 1]
+            next_mod = modules[mod_key]
+            m = get_vars_class(next_mod)(mod_key, coverage=coverage)
             nav['next_link'] = os.path.basename(m.module_link)
             nav['next_label'] = m.module_name
 
-        html_module_detail(os.path.join(m_dir, m_vars.module_name + '.html'), n, nav)
+        html_module_detail(os.path.join(m_dir, m_vars.module_name + '.html'), m_vars, nav)
 
     # 以用户为中心输出统计结果:
 
@@ -289,11 +300,11 @@ def output_author_html(outdir, modules, author, test_timestamp, authors, index):
     up_link = "../auth_index.html"
     up_label = _("All authors")
     if not has_no_prev:
-        prev_link = "../" +  Authors.author_2_url[authors[index - 1]]
+        prev_link = "../" + Authors.author_2_url[authors[index - 1]]
         prev_label = authors[index - 1]
 
     if not has_no_next:
-        next_link = "../" +  Authors.author_2_url[authors[index + 1]]
+        next_link = "../" + Authors.author_2_url[authors[index + 1]]
         next_label = authors[index + 1]
 
     if has_no_prev and has_no_next:
