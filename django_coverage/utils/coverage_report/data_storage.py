@@ -33,7 +33,12 @@ class ModuleVars(object):
 
     def _init(self, module_name, module, coverage):
         # 从coverage获取统计数据
-        source_file, stmts, excluded, missed, missed_display = coverage.analysis2(module)
+        try:
+            source_file, stmts, excluded, missed, missed_display = coverage.analysis2(module)
+        except Exception as e:
+            # no source file - skip (*.pyc for example)
+            self.total_count = 0
+            return
 
         executed = list(set(stmts).difference(missed))
         total = list(set(stmts).union(excluded))
@@ -81,7 +86,14 @@ class TemplateVars(object):
         plugin = coverage.plugins.get('django_coverage_plugin.DjangoTemplatePlugin')
         if plugin:
             fr = plugin.file_reporter(module.__path__)
-            analysis = coverage._analyze(fr)
+            try:
+                analysis = coverage._analyze(fr)
+            except Exception as e:
+                print '-- problem with file %s --' % module.__path__
+                print e
+                # skip this file
+                self.total_count = 0
+                return
 
             source_file, stmts, excluded, missed, missed_display = (
                 analysis.filename, sorted(analysis.statements),

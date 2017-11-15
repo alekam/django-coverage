@@ -103,9 +103,8 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
     for n in m_names:
         mod = modules[n]
         m_vars = get_vars_class(mod)(n, modules[n], coverage)
-#             m_vars = ModuleVars(n, mod, coverage)
         if not m_vars.total_count:
-            excludes.append(m_vars.module_name)
+            excludes.append(n)
             del modules[n]
             continue
 
