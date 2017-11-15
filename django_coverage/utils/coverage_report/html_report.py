@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os, time
+import os
 import datetime
 
 try:
@@ -155,8 +155,9 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
         html_module_detail(os.path.join(m_dir, m_vars.module_name + '.html'), m_vars, nav)
 
     # 以用户为中心输出统计结果:
-
-    output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered)
+    if settings.COVERAGE_PROCESS_AUTHORS:
+        output_authors_html(outdir, test_timestamp, total_lines, total_executed,
+                            total_excluded, total_stmts, overall_covered)
 
     #
     # 统计结果的首页
@@ -193,7 +194,8 @@ def html_report(coverage, outdir, modules, excludes=None, errors=None):
         open(os.path.join(outdir, js_file), "wb").write(js_data)
 
 
-def output_authors_html(outdir, test_timestamp, total_lines, total_executed, total_excluded, total_stmts, overall_covered):
+def output_authors_html(outdir, test_timestamp, total_lines, total_executed,
+                        total_excluded, total_stmts, overall_covered):
     """
     将所有的authors的统计数据导出
     :param outdir:
@@ -219,7 +221,6 @@ def output_authors_html(outdir, test_timestamp, total_lines, total_executed, tot
     for author in authors:
         module_link = p2url(os.path.join(SUBDIR_AUTHOR, author + '.html'))
         Authors().author_2_url[author] = module_link
-
 
     index = 0
     for author in authors:

@@ -47,6 +47,9 @@ COVERAGE_CODE_EXCLUDES = getattr(settings, 'COVERAGE_CODE_EXCLUDES', [
 
 COVERAGE_PROCESS_TEMPLATES = getattr(settings, 'COVERAGE_PROCESS_TEMPLATES', False)
 
+# Add code authors to coverage report (very slow for big code base)
+COVERAGE_PROCESS_AUTHORS = getattr(settings, 'COVERAGE_PROCESS_AUTHORS', False)
+
 # Specify a list of regular expressions of paths to exclude from
 # coverage analysis.
 # Note these paths are ignored by the module introspection tool and take

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from django.utils.translation import ugettext as _
-
+from django_coverage import settings
 
 TOP = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -28,19 +28,19 @@ TOP = """\
       {
         color: #3d707a;
       }
-      
+
       a:hover, a:active
       {
         color: #bf7d18;
       }
-    
-      body 
+
+      body
       {
         font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
         font-size: 13px;
       }
-      
-      .nav 
+
+      .nav
       {
         font-size: 12px;
         margin-left: 50px;
@@ -51,41 +51,41 @@ TOP = """\
         color: #707070;
       }
 
-      .executed 
+      .executed
       {
         color: #3d9900;
       }
 
-      .missed 
+      .missed
       {
         color: red;
         font-weight: bold;
       }
 
-      .excluded 
+      .excluded
       {
         color: #6090f0;
         font-weight: lighter;
       }
-    
-      #content-header 
+
+      #content-header
       {
         font-size: 12px;
         padding: 18px 0 18px 50px;
       }
 
-      #content-header h1 
+      #content-header h1
       {
         font-size: 16px;
         margin: 10px 0 0 0;
         color: #909090;
       }
-      
+
       #module-name
       {
         color: #583707;
       }
-    
+
       #content-header p
       {
         font-size: 13px;
@@ -93,22 +93,22 @@ TOP = """\
         color: #909090;
       }
 
-      #content-header .normal 
+      #content-header .normal
       {
         color: #609030;
       }
 
-      #content-header .warning 
+      #content-header .warning
       {
         color: #d0a000;
       }
 
-      #content-header .critical 
+      #content-header .critical
       {
         color: red;
       }
-      
-      #source-listing 
+
+      #source-listing
       {
         margin-bottom: 24px;
       }
@@ -131,8 +131,8 @@ TOP = """\
             color:#D4D4D4;
       }
 
-        
-      #source-listing ol code 
+
+      #source-listing ol code
       {
         padding:  0 .001em 0 0; /* Firefox doesn't render empty li's properly */
         font-size: medium;
@@ -193,17 +193,17 @@ CONTENT_HEADER = """\
     <span class="executed">%(executed_count)d executed</span>,
     <span class="missed">%(missed_count)d missed</span>,
     <span class="excluded">%(excluded_count)d excluded</span>,
-    <span class="ignored">%(ignored_count)d ignored</span> 
-  </p> 
+    <span class="ignored">%(ignored_count)d ignored</span>
+  </p>
 </div>
 """
 
-CONTENT_FILTER = u"""\
+CONTENT_FILTER = """\
 <div id="authors">
-    """ + _("Authors List") + u""":<br/>
+    """ + _("Authors List") + """:<br/>
     %(authors_html)s
 </div>
-"""
+""" if settings.COVERAGE_PROCESS_AUTHORS else ''
 
 CONTENT_BODY = """\
 <div id="source-listing">
@@ -213,7 +213,10 @@ CONTENT_BODY = """\
 </div>
 """
 
-SOURCE_LINE = '<li class="%(line_status)s"><code>%(source_line)s</code><span class="%(line_status)s author">%(author)s</span></li>'
+SOURCE_LINE = '<li class="%(line_status)s"><code>%(source_line)s</code>'
+if settings.COVERAGE_PROCESS_AUTHORS:
+    SOURCE_LINE += '<span class="%(line_status)s author">%(author)s</span>'
+SOURCE_LINE += '</li>'
 
 BOTTOM = """\
     <script src="../zepto.min.js"></script>

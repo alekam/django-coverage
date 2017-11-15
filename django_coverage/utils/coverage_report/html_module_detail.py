@@ -23,6 +23,8 @@ from django.utils.translation import ugettext as _
 
 from django_coverage.utils.coverage_report.templates import default_module_detail as module_detail
 from django_coverage.utils.module_tools.data_storage import Authors
+from django_coverage import settings
+
 
 def get_code_authors(relative_path, cwd=None):
     output = subprocess.check_output(["git", "blame", relative_path], cwd=cwd)
@@ -76,60 +78,72 @@ def html_module_detail(filename, m_vars, nav=None):
     """
     if not nav:
         nav = {}
-    
+
     module_name = m_vars.module_name
 
     # 遍历每一个module, 并且将它的coverage可视化出来
     m_vars.source_lines = source_lines = list()
     i = 0
 
-    add_auth_coverage = Authors().add_auth_coverage
+    if settings.COVERAGE_PROCESS_AUTHORS:
+        add_auth_coverage = Authors().add_auth_coverage
 
-    module_path = m_vars.get_module_path()
-    cwd = m_vars.get_module_dir()
-    try:
-        code_blame_lines = get_code_authors(module_path, cwd)
-    except:
-        code_blame_lines = None
-#         import pdb;pdb.set_trace()
+        module_path = m_vars.get_module_path()
+        cwd = m_vars.get_module_dir()
+        try:
+            code_blame_lines = get_code_authors(module_path, cwd)
+        except:
+            code_blame_lines = None
+    #         import pdb;pdb.set_trace()
 
-    authors = set()
-    for i, source_line in enumerate([cgi.escape(l.rstrip()) for l in open(m_vars.source_file, 'rb').readlines()]):
-        author = ""
-        if code_blame_lines is not None:
-            try:
-                author = get_code_last_auth(code_blame_lines, i)
-            except:
-                pass
-        if author:
-            authors.add(author)
+        authors = set()
 
-        line_status = 'ignored'
-        line_idx = i + 1
-        if line_idx in m_vars.executed:
-            line_status = 'executed'
-            # executed, missed, excluded
-            add_auth_coverage(author, m_vars, 1, 0, 0)
+    for i, source_line in enumerate([cgi.escape(l.rstrip()) \
+                            for l in open(m_vars.source_file, 'rb').readlines()]):
+        if settings.COVERAGE_PROCESS_AUTHORS:
+            author = ""
+            if code_blame_lines is not None:
+                try:
+                    author = get_code_last_auth(code_blame_lines, i)
+                except:
+                    pass
+            if author:
+                authors.add(author)
 
-        if line_idx in m_vars.excluded:
-            line_status = 'excluded'
-            add_auth_coverage(author, m_vars, 0, 0, 1)
+            line_status = 'ignored'
+            line_idx = i + 1
+            if line_idx in m_vars.executed:
+                line_status = 'executed'
+                # executed, missed, excluded
+                add_auth_coverage(author, m_vars, 1, 0, 0)
 
-        if line_idx in m_vars.missed:
-            line_status = 'missed'
-            add_auth_coverage(author, m_vars, 0, 1, 0)
+            if line_idx in m_vars.excluded:
+                line_status = 'excluded'
+                add_auth_coverage(author, m_vars, 0, 0, 1)
 
-        source_lines.append(module_detail.SOURCE_LINE % vars())
+            if line_idx in m_vars.missed:
+                line_status = 'missed'
+                add_auth_coverage(author, m_vars, 0, 1, 0)
+
+            source_lines.append(module_detail.SOURCE_LINE % vars())
+        else:
+            line_status = 'ignored'
+            if i + 1 in m_vars.executed: line_status = 'executed'
+            if i + 1 in m_vars.excluded: line_status = 'excluded'
+            if i + 1 in m_vars.missed: line_status = 'missed'
+            source_lines.append(module_detail.SOURCE_LINE % vars())
 
     m_vars.ignored_count = i + 1 - m_vars.total_count
     m_vars.source_lines = os.linesep.join(source_lines)
 
-    authors_html = []
-    authors_html.append('<a href="javascript:void(0)" class="selected">%s</a>' % _('Full list'))
-    for author in authors:
-        authors_html.append('<a href="javascript:void(0)">%s</a>' % author)
-
-    authors_html = "".join(authors_html)
+    if settings.COVERAGE_PROCESS_AUTHORS:
+        authors_html = []
+        authors_html.append('<a href="javascript:void(0)" class="selected">%s</a>' % _('Full list'))
+        for author in authors:
+            authors_html.append('<a href="javascript:void(0)">%s</a>' % author)
+        authors_html = "".join(authors_html)
+    else:
+        authors_html = ''
 
     if 'prev_link' in nav and 'next_link' in nav:
         nav_html = module_detail.NAV % nav
