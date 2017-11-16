@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import os, re, sys
+import os, re
 from glob import glob
 
 from .data_storage import *
 from .module_loader import *
+from django_coverage import settings
 
 try:
     set
@@ -124,7 +125,7 @@ def _get_all_packages(pkg_name, pkg, blacklist, exclude_dirs):
                     for d in dirs[:]:
                         dirs.remove(d)
             except ImportError:
-                if m_name.endswith('.templates'):
+                if settings.COVERAGE_PROCESS_TEMPLATES and m_name.endswith('.templates'):
                     walk_templates_dir(m_name, root, dirs, files, templates)
                 else:
                     errors.append(m_name)
